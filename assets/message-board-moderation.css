@@ -130,3 +130,9 @@
     background: #f5f5f5;
     color: #222;
 }
+
+.mbm-bm-moderation > h2,
+.mbm-bm-moderation > p,
+.mbm-bm-moderation h3 {
+    color: #fff;
+}
