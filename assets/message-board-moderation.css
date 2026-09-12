@@ -1,0 +1,132 @@
+.mbm-bm-moderation {
+    max-width: 900px;
+    margin: 30px auto;
+}
+
+.mbm-bm-board {
+    margin-top: 35px;
+    padding-top: 25px;
+    border-top: 2px solid #eee;
+}
+
+.mbm-bm-board-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.mbm-bm-board-header h3 {
+    margin: 0;
+}
+
+.mbm-bm-count {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 20px;
+    background: #f2f2f2;
+    color: #222;
+}
+
+.mbm-bm-list {
+    display: grid;
+    gap: 18px;
+}
+
+.mbm-bm-item {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background: #fff;
+    color: #222;
+}
+
+.mbm-bm-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.mbm-bm-meta span {
+    opacity: .65;
+    font-size: 14px;
+}
+
+.mbm-bm-message {
+    margin-bottom: 18px;
+}
+
+.mbm-bm-message > :first-child {
+    margin-top: 0;
+}
+
+.mbm-bm-message > :last-child {
+    margin-bottom: 0;
+}
+
+.mbm-bm-attachments {
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.mbm-bm-attachment {
+    display: block;
+}
+
+.mbm-bm-attachment-image-link {
+    max-width: 680px;
+}
+
+.mbm-bm-attachment-image {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 700px;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+.mbm-bm-attachment-file {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    text-decoration: none;
+}
+
+.mbm-bm-actions form {
+    display: flex;
+    gap: 10px;
+}
+
+.mbm-bm-actions button {
+    border: 0;
+    border-radius: 7px;
+    padding: 9px 16px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.mbm-bm-approve {
+    background: #2e7d32;
+    color: #fff;
+}
+
+.mbm-bm-reject {
+    background: #c62828;
+    color: #fff;
+}
+
+.mbm-bm-notice,
+.mbm-bm-empty {
+    margin-top: 15px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: #f5f5f5;
+    color: #222;
+}
