@@ -51,12 +51,12 @@ final class MBM_BM {
     }
 
     public function register_assets() {
-        wp_register_style(
-            'mbm-bm-moderation',
-            MBM_BM_URL . 'assets/message-board-moderation.css',
-            array(),
-            MBM_BM_VERSION
-        );
+		wp_register_style(
+			'mbm-bm-moderation',
+			MBM_BM_URL . 'assets/message-board-moderation.css',
+			array(),
+			filemtime( MBM_BM_DIR . 'assets/message-board-moderation.css' )
+		);
     }
 
     private function defaults() {
