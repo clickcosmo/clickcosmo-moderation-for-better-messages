@@ -45,6 +45,7 @@ final class MBM_BM {
             1
         );
 
+        add_action( 'plugins_loaded', array( $this, 'register_prz_addon' ), 20 );
         add_action( 'admin_menu', array( $this, 'register_settings_page' ), 21 );
         add_action( 'admin_init', array( $this, 'register_settings' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
@@ -153,7 +154,7 @@ final class MBM_BM {
     private function prz_setlist_builder_ready() {
         return defined( 'PRJ_SB_PLUGIN_FILE' )
             && defined( 'PRJ_SB_VERSION' )
-            && function_exists( 'prj_sb_register_admin_menu' );
+            && function_exists( 'prj_sb_get_addons_map' );
     }
 
     public function dependency_notice() {
@@ -822,14 +823,6 @@ final class MBM_BM {
 
     public function register_settings_page() {
         if ( $this->prz_setlist_builder_ready() ) {
-            add_submenu_page(
-                'prj-dashboard',
-                __( 'Moderation for Better Messages', 'message-board-moderation-for-bm' ),
-                __( 'Moderation for Better Messages', 'message-board-moderation-for-bm' ),
-                'manage_options',
-                'message-board-moderation-for-bm',
-                array( $this, 'render_settings_page' )
-            );
             return;
         }
 
@@ -842,6 +835,31 @@ final class MBM_BM {
             'dashicons-shield-alt',
             20
         );
+    }
+
+    public function register_prz_addon() {
+        if ( ! $this->prz_setlist_builder_ready() ) {
+            return;
+        }
+
+        add_filter( 'prj_sb_addons_map', array( $this, 'add_prz_addon' ) );
+    }
+
+    public function add_prz_addon( $addons ) {
+        if ( ! is_array( $addons ) ) {
+            $addons = array();
+        }
+
+        $addons['message_board_moderation'] = array(
+            'label'           => __( 'Message Board Moderation', 'message-board-moderation-for-bm' ),
+            'dashboard_label' => __( 'Message Moderation', 'message-board-moderation-for-bm' ),
+            'description'     => __( 'Moderate selected Better Messages message boards.', 'message-board-moderation-for-bm' ),
+            'plugin_file'     => plugin_basename( MBM_BM_FILE ),
+            'open_url'        => admin_url( 'admin.php?page=message-board-moderation-for-bm' ),
+            'open_label'      => __( 'Open Moderation', 'message-board-moderation-for-bm' ),
+        );
+
+        return $addons;
     }
 
     public function register_settings() {
