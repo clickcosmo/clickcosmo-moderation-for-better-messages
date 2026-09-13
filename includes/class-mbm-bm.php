@@ -821,12 +821,21 @@ final class MBM_BM {
         }
     }
 
-    public function register_settings_page() {
-        if ( $this->prz_setlist_builder_ready() ) {
-            return;
-        }
+	public function register_settings_page() {
+		if ( $this->prz_setlist_builder_ready() ) {
+			add_submenu_page(
+				null,
+				__( 'Moderation for Better Messages', 'message-board-moderation-for-bm' ),
+				__( 'Moderation for Better Messages', 'message-board-moderation-for-bm' ),
+				'manage_options',
+				'message-board-moderation-for-bm',
+				array( $this, 'render_settings_page' )
+			);
 
-        add_menu_page(
+			return;
+		}
+
+		add_menu_page(
             __( 'Moderation for Better Messages', 'message-board-moderation-for-bm' ),
             __( 'Moderation for Better Messages', 'message-board-moderation-for-bm' ),
             'manage_options',
