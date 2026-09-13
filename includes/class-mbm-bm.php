@@ -45,8 +45,9 @@ final class MBM_BM {
             1
         );
 
-        add_action( 'admin_menu', array( $this, 'register_settings_page' ) );
+        add_action( 'admin_menu', array( $this, 'register_settings_page' ), 21 );
         add_action( 'admin_init', array( $this, 'register_settings' ) );
+        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
         add_action( 'admin_notices', array( $this, 'dependency_notice' ) );
     }
 
@@ -64,6 +65,26 @@ final class MBM_BM {
             'boards'           => '',
             'moderation_url'   => '/message-moderation/',
             'email_notify'     => 1,
+            'page_text_color'  => '#fff',
+            'board_heading_color' => '#fff',
+            'badge_background_color' => '#f2f2f2',
+            'badge_text_color' => '#222',
+            'card_background_color' => '#fff',
+            'card_text_color' => '#222',
+            'card_border_color' => '#ddd',
+            'meta_text_color' => '#777',
+            'approve_background_color' => '#2e7d32',
+            'approve_text_color' => '#fff',
+            'reject_background_color' => '#c62828',
+            'reject_text_color' => '#fff',
+            'notice_background_color' => '#f5f5f5',
+            'notice_text_color' => '#222',
+            'attachment_border_color' => '#ddd',
+            'content_max_width' => 900,
+            'card_padding' => 20,
+            'card_border_radius' => 12,
+            'button_border_radius' => 7,
+            'attachment_max_height' => 700,
         );
     }
 
@@ -129,6 +150,12 @@ final class MBM_BM {
         return function_exists( 'Better_Messages' );
     }
 
+    private function prz_setlist_builder_ready() {
+        return defined( 'PRJ_SB_PLUGIN_FILE' )
+            && defined( 'PRJ_SB_VERSION' )
+            && function_exists( 'prj_sb_register_admin_menu' );
+    }
+
     public function dependency_notice() {
         if ( ! current_user_can( 'activate_plugins' ) || $this->better_messages_ready() ) {
             return;
@@ -136,7 +163,7 @@ final class MBM_BM {
 
         echo '<div class="notice notice-warning"><p>';
         echo esc_html__(
-            'Message Board Moderation for BM requires Better Messages to be active.',
+            'Message Board Moderation for Better Messages requires Better Messages to be active.',
             'message-board-moderation-for-bm'
         );
         echo '</p></div>';
@@ -313,6 +340,7 @@ final class MBM_BM {
         }
 
         wp_enqueue_style( 'mbm-bm-moderation' );
+        $this->add_frontend_variables();
 
         global $wpdb;
 
@@ -793,12 +821,26 @@ final class MBM_BM {
     }
 
     public function register_settings_page() {
-        add_options_page(
-            __( 'Message Board Moderation for BM', 'message-board-moderation-for-bm' ),
-            __( 'Message Board Moderation for BM', 'message-board-moderation-for-bm' ),
+        if ( $this->prz_setlist_builder_ready() ) {
+            add_submenu_page(
+                'prj-dashboard',
+                __( 'Moderation for Better Messages', 'message-board-moderation-for-bm' ),
+                __( 'Moderation for Better Messages', 'message-board-moderation-for-bm' ),
+                'manage_options',
+                'message-board-moderation-for-bm',
+                array( $this, 'render_settings_page' )
+            );
+            return;
+        }
+
+        add_menu_page(
+            __( 'Moderation for Better Messages', 'message-board-moderation-for-bm' ),
+            __( 'Moderation for Better Messages', 'message-board-moderation-for-bm' ),
             'manage_options',
             'message-board-moderation-for-bm',
-            array( $this, 'render_settings_page' )
+            array( $this, 'render_settings_page' ),
+            'dashicons-shield-alt',
+            20
         );
     }
 
@@ -812,6 +854,7 @@ final class MBM_BM {
 
     public function sanitize_settings( $input ) {
         $output = $this->defaults();
+        $input  = is_array( $input ) ? $input : array();
 
         $output['boards'] = isset( $input['boards'] )
             ? sanitize_textarea_field( $input['boards'] )
@@ -832,7 +875,92 @@ final class MBM_BM {
         $output['moderation_url'] = $moderation_url;
         $output['email_notify']   = empty( $input['email_notify'] ) ? 0 : 1;
 
+        $color_keys = array(
+            'page_text_color',
+            'board_heading_color',
+            'badge_background_color',
+            'badge_text_color',
+            'card_background_color',
+            'card_text_color',
+            'card_border_color',
+            'meta_text_color',
+            'approve_background_color',
+            'approve_text_color',
+            'reject_background_color',
+            'reject_text_color',
+            'notice_background_color',
+            'notice_text_color',
+            'attachment_border_color',
+        );
+
+        foreach ( $color_keys as $key ) {
+            $color = isset( $input[ $key ] ) ? sanitize_hex_color( $input[ $key ] ) : '';
+            if ( $color ) {
+                $output[ $key ] = $color;
+            }
+        }
+
+        $number_limits = array(
+            'content_max_width' => array( 320, 2000 ),
+            'card_padding' => array( 0, 100 ),
+            'card_border_radius' => array( 0, 50 ),
+            'button_border_radius' => array( 0, 50 ),
+            'attachment_max_height' => array( 100, 2000 ),
+        );
+
+        foreach ( $number_limits as $key => $limits ) {
+            if ( isset( $input[ $key ] ) && '' !== $input[ $key ] ) {
+                $output[ $key ] = min( $limits[1], max( $limits[0], absint( $input[ $key ] ) ) );
+            }
+        }
+
         return $output;
+    }
+
+    public function enqueue_admin_assets( $hook ) {
+        if ( false === strpos( $hook, 'message-board-moderation-for-bm' ) ) {
+            return;
+        }
+
+        wp_enqueue_style( 'wp-color-picker' );
+        wp_enqueue_script( 'wp-color-picker' );
+        wp_add_inline_script(
+            'wp-color-picker',
+            "jQuery(function ($) { $('.mbm-bm-color-field').wpColorPicker(); });"
+        );
+    }
+
+    private function add_frontend_variables() {
+        $settings = $this->settings();
+        $variables = array(
+            '--mbm-page-text' => $settings['page_text_color'],
+            '--mbm-board-heading' => $settings['board_heading_color'],
+            '--mbm-badge-bg' => $settings['badge_background_color'],
+            '--mbm-badge-text' => $settings['badge_text_color'],
+            '--mbm-card-bg' => $settings['card_background_color'],
+            '--mbm-card-text' => $settings['card_text_color'],
+            '--mbm-card-border' => $settings['card_border_color'],
+            '--mbm-meta-text' => $settings['meta_text_color'],
+            '--mbm-approve-bg' => $settings['approve_background_color'],
+            '--mbm-approve-text' => $settings['approve_text_color'],
+            '--mbm-reject-bg' => $settings['reject_background_color'],
+            '--mbm-reject-text' => $settings['reject_text_color'],
+            '--mbm-notice-bg' => $settings['notice_background_color'],
+            '--mbm-notice-text' => $settings['notice_text_color'],
+            '--mbm-attachment-border' => $settings['attachment_border_color'],
+            '--mbm-content-width' => absint( $settings['content_max_width'] ) . 'px',
+            '--mbm-card-padding' => absint( $settings['card_padding'] ) . 'px',
+            '--mbm-card-radius' => absint( $settings['card_border_radius'] ) . 'px',
+            '--mbm-button-radius' => absint( $settings['button_border_radius'] ) . 'px',
+            '--mbm-attachment-height' => absint( $settings['attachment_max_height'] ) . 'px',
+        );
+
+        $css = '.mbm-bm-moderation{';
+        foreach ( $variables as $name => $value ) {
+            $css .= $name . ':' . esc_attr( $value ) . ';';
+        }
+        $css .= '}';
+        wp_add_inline_style( 'mbm-bm-moderation', $css );
     }
 
     public function render_settings_page() {
@@ -843,13 +971,16 @@ final class MBM_BM {
         $settings = $this->settings();
         ?>
         <div class="wrap">
-            <h1><?php esc_html_e( 'Message Board Moderation for BM', 'message-board-moderation-for-bm' ); ?></h1>
+            <h1><?php esc_html_e( 'Message Board Moderation for Better Messages', 'message-board-moderation-for-bm' ); ?></h1>
 
             <form method="post" action="options.php">
                 <?php settings_fields( 'mbm_bm_settings_group' ); ?>
 
                 <table class="form-table" role="presentation">
 
+                    <tr>
+                        <th colspan="2"><h2><?php esc_html_e( 'Moderation Boards', 'message-board-moderation-for-bm' ); ?></h2></th>
+                    </tr>
                     <tr>
                         <th scope="row">
                             <label for="mbm-bm-boards">
@@ -874,6 +1005,9 @@ final class MBM_BM {
                     </tr>
 
                     <tr>
+                        <th colspan="2"><h2><?php esc_html_e( 'Moderation Page', 'message-board-moderation-for-bm' ); ?></h2></th>
+                    </tr>
+                    <tr>
                         <th scope="row">
                             <label for="mbm-bm-moderation-url">
                                 <?php esc_html_e( 'Moderation page path', 'message-board-moderation-for-bm' ); ?>
@@ -894,6 +1028,9 @@ final class MBM_BM {
                     </tr>
 
                     <tr>
+                        <th colspan="2"><h2><?php esc_html_e( 'Notifications', 'message-board-moderation-for-bm' ); ?></h2></th>
+                    </tr>
+                    <tr>
                         <th scope="row">
                             <?php esc_html_e( 'Moderator email notifications', 'message-board-moderation-for-bm' ); ?>
                         </th>
@@ -909,6 +1046,74 @@ final class MBM_BM {
                             </label>
                         </td>
                     </tr>
+
+                    <tr>
+                        <th colspan="2"><h2><?php esc_html_e( 'Frontend Appearance', 'message-board-moderation-for-bm' ); ?></h2></th>
+                    </tr>
+                    <?php
+                    $color_fields = array(
+                        'page_text_color' => 'Page heading / intro text color',
+                        'board_heading_color' => 'Board heading color',
+                        'badge_background_color' => 'Badge background color',
+                        'badge_text_color' => 'Badge text color',
+                        'card_background_color' => 'Card background color',
+                        'card_text_color' => 'Card text color',
+                        'card_border_color' => 'Card border color',
+                        'meta_text_color' => 'Secondary/meta text color',
+                        'approve_background_color' => 'Approve button background',
+                        'approve_text_color' => 'Approve button text',
+                        'reject_background_color' => 'Reject button background',
+                        'reject_text_color' => 'Reject button text',
+                        'notice_background_color' => 'Notice/empty-state background',
+                        'notice_text_color' => 'Notice/empty-state text',
+                        'attachment_border_color' => 'Attachment/file border color',
+                    );
+                    foreach ( $color_fields as $key => $label ) :
+                        ?>
+                        <tr>
+                            <th scope="row"><label for="mbm-bm-<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></label></th>
+                            <td>
+                                <input
+                                    id="mbm-bm-<?php echo esc_attr( $key ); ?>"
+                                    class="mbm-bm-color-field"
+                                    type="text"
+                                    name="<?php echo esc_attr( self::OPTION_KEY ); ?>[<?php echo esc_attr( $key ); ?>]"
+                                    value="<?php echo esc_attr( $settings[ $key ] ); ?>"
+                                    data-default-color="<?php echo esc_attr( $this->defaults()[ $key ] ); ?>"
+                                >
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+
+                    <tr>
+                        <th colspan="2"><h2><?php esc_html_e( 'Layout', 'message-board-moderation-for-bm' ); ?></h2></th>
+                    </tr>
+                    <?php
+                    $number_fields = array(
+                        'content_max_width' => array( 'Content max width', 320, 2000 ),
+                        'card_padding' => array( 'Message card padding', 0, 100 ),
+                        'card_border_radius' => array( 'Message card border radius', 0, 50 ),
+                        'button_border_radius' => array( 'Button border radius', 0, 50 ),
+                        'attachment_max_height' => array( 'Maximum attachment image height', 100, 2000 ),
+                    );
+                    foreach ( $number_fields as $key => $field ) :
+                        ?>
+                        <tr>
+                            <th scope="row"><label for="mbm-bm-<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $field[0] ); ?></label></th>
+                            <td>
+                                <input
+                                    id="mbm-bm-<?php echo esc_attr( $key ); ?>"
+                                    type="number"
+                                    min="<?php echo esc_attr( $field[1] ); ?>"
+                                    max="<?php echo esc_attr( $field[2] ); ?>"
+                                    step="1"
+                                    name="<?php echo esc_attr( self::OPTION_KEY ); ?>[<?php echo esc_attr( $key ); ?>]"
+                                    value="<?php echo esc_attr( $settings[ $key ] ); ?>"
+                                > px
+                                <p class="description"><?php esc_html_e( 'Enter a whole-pixel value.', 'message-board-moderation-for-bm' ); ?></p>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
 
                 </table>
 

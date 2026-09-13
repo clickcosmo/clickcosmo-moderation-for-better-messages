@@ -1,11 +1,11 @@
-# Message Board Moderation for BM
+# Message Board Moderation for Better Messages
 
 Regular WordPress plugin for Better Messages.
 
 ## Install
 
 1. Upload and activate the plugin ZIP from **Plugins > Add New > Upload Plugin**.
-2. Go to **Settings > Message Board Moderation for BM**.
+2. Go to **Moderation for Better Messages** in the WordPress admin menu.
 3. Add moderated boards one per line:
    `thread_id|Board Name`
 4. Create or edit your moderation page and add:
