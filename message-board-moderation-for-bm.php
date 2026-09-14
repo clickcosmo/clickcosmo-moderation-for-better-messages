@@ -3,7 +3,7 @@
  * Plugin Name:       Message Board Moderation for Better Messages
  * Description:       Adds configurable per-thread pre-moderation and a frontend moderation queue for Better Messages.
  * Version:           1.0.2
- * Author:            ClickCOSMO LLC
+ * Author:            ClickCOSMO
  * Author URI:        https://clickcosmo.com
  * Text Domain:       message-board-moderation-for-bm
  */
