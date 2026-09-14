@@ -6,6 +6,7 @@
  * Author:            ClickCOSMO
  * Author URI:        https://clickcosmo.com
  * Text Domain:       message-board-moderation-for-bm
+ * ClickCOSMO Support: yes
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
