@@ -1,0 +1,88 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "message-board-moderation-for-bm.php"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.0"
+          tools: none
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: find . -type f -name '*.php' -not -path './build/*' -print0 | xargs -0 -n1 php -l
+
+      - name: Read and validate plugin version
+        id: version
+        shell: bash
+        run: |
+          version="$(awk -F': ' '/^[[:space:]]*\*[[:space:]]Version:/{print $2; exit}' message-board-moderation-for-bm.php | tr -d '\r')"
+
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid plugin version: $version" >&2
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether release already exists
+        id: existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build installable ZIP
+        if: steps.existing.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          mkdir -p build/message-board-moderation-for-bm
+          cp -R assets build/message-board-moderation-for-bm/
+          cp -R includes build/message-board-moderation-for-bm/
+          cp message-board-moderation-for-bm.php README.md build/message-board-moderation-for-bm/
+
+          (
+            cd build
+            zip -rq "../message-board-moderation-for-bm-$VERSION.zip" message-board-moderation-for-bm
+          )
+
+          sha256sum "message-board-moderation-for-bm-$VERSION.zip"
+
+      - name: Create GitHub Release
+        if: steps.existing.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          gh release create "$TAG" "message-board-moderation-for-bm-$VERSION.zip" \
+            --target "$GITHUB_SHA" \
+            --title "Message Board Moderation for Better Messages $VERSION" \
+            --generate-notes
