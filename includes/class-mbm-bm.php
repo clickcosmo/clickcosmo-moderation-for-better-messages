@@ -827,7 +827,7 @@ final class MBM_BM {
 				null,
 				__( 'Moderation for Better Messages', 'message-board-moderation-for-bm' ),
 				__( 'Moderation for Better Messages', 'message-board-moderation-for-bm' ),
-				'manage_options',
+				'read',
 				'message-board-moderation-for-bm',
 				array( $this, 'render_settings_page' )
 			);
@@ -990,10 +990,16 @@ final class MBM_BM {
         wp_add_inline_style( 'mbm-bm-moderation', $css );
     }
 
-    public function render_settings_page() {
-        if ( ! current_user_can( 'manage_options' ) ) {
-            return;
-        }
+	public function render_settings_page() {
+		if (
+			! current_user_can( 'manage_options' )
+			&& (
+				! function_exists( 'prj_sb_can_access_section' )
+				|| ! prj_sb_can_access_section( 'access_frontend' )
+			)
+		) {
+			return;
+		}
 
         $settings = $this->settings();
         ?>
