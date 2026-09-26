@@ -1,11 +1,6 @@
 name: Auto Release
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "message-board-moderation-for-bm.php"
   workflow_dispatch:
 
 permissions:
