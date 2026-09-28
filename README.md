@@ -16,7 +16,7 @@ Regular WordPress plugin for Better Messages.
 
 Use like this in the settings textarea:
 
-988|SHARE YOUR EVENTS
+988|SHARE YOUR EVENTS<br>
 989|FIND MUSICIANS
 
 ## Important
