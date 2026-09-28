@@ -21,4 +21,4 @@ Use the room ID and room Name in the settings textarea:
 
 ## Important
 
-This plugin uses "read" permission because it is designed to work with PRZ Setlist Builder. If you are not using the PRZ Setlist Builder, you may have to change the permission to "manage_options".
+This plugin uses "read" permission because it is designed to work with PRZ Setlist Builder. If you are not using the PRZ Setlist Builder, you may have to change the permission to "manage_options", or secure the page where the shortcode is placed.
