@@ -21,4 +21,4 @@ Use the room ID and room Name in the settings textarea:
 
 ## Important
 
-Disable/remove the old moderation snippet after this plugin is active and configured so the same Better Messages moderation hooks are not registered twice.
+This plugin uses "read" permission because it is designed to work with PRZ Setlist Builder. If you are not using the PRZ Setlist Builder, you may have to change the permission to "manage_options".
