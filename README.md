@@ -12,9 +12,9 @@ Regular WordPress plugin for Better Messages.
    `[message_board_moderation_bm]`
 5. Confirm the moderation page path in plugin settings.
 
-## Existing PRZ board values
+## Sample values
 
-Use like this in the settings textarea:
+Use the room ID and room Name in the settings textarea:
 
 988|SHARE YOUR EVENTS<br>
 989|FIND MUSICIANS
